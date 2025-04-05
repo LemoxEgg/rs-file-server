@@ -27,9 +27,8 @@
         shellHook = "echo 'Rust shell init complete.'";
       };
 
-
-    
-    packages.${system}.default = pkgs.rustPlatform.buildRustPackage rec {
+ 
+    default =  pkgs.rustPlatform.buildRustPackage rec {
       pname = "file-server";
       version = "0.1.0";
       src = pkgs.lib.cleanSource ./.;
@@ -41,7 +40,7 @@
       # installPhase = "cp $src/target/release/file_server $out/bin/fileserver";
     };
 
-    
+    packages.${system}.default = default;
     
     RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
   };
