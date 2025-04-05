@@ -1,0 +1,13 @@
+[package]
+name = "file_server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+flate2 = "1.0.30"
+
+[target.'cfg(windows)'.dependencies]
+local-ip-address = "0.6.1"
+
+[build-dependencies]
+cc = "1.0.99"
