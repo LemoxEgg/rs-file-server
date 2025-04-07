@@ -5,14 +5,14 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
   };
 
-  outputs = { self, nixpkgs }: 
-  let
-    system = "x86_64-linux"; 
-    pkgs = nixpkgs.legacyPackages.${system};
-  in
-  rec {
-    dependencies =
-      with pkgs; [
+  outputs =
+    { self, nixpkgs }:
+    let
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+    in
+    rec {
+      dependencies = with pkgs; [
         rustc
         cargo
         gcc
@@ -21,27 +21,25 @@
         rust-analyzer
       ];
 
-    devShells.${system}.default = 
-      pkgs.mkShell {
+      devShells.${system}.default = pkgs.mkShell {
         buildInputs = dependencies;
         shellHook = "echo 'Rust shell init complete.'";
       };
 
- 
-    default =  pkgs.rustPlatform.buildRustPackage rec {
-      pname = "file-server";
-      version = "0.1.0";
-      src = pkgs.lib.cleanSource ./.;
-      nativeBuildInputs = dependencies;
+      default = pkgs.rustPlatform.buildRustPackage rec {
+        pname = "file-server";
+        version = "0.1.0";
+        src = pkgs.lib.cleanSource ./.;
+        nativeBuildInputs = dependencies;
 
-      cargoLock.lockFile = "${src}/Cargo.lock";
-      # phases = [ "buildPhase" "installPhase" ];
-      # buildPhase = "cargo build --release";
-      # installPhase = "cp $src/target/release/file_server $out/bin/fileserver";
+        cargoLock.lockFile = "${src}/Cargo.lock";
+        # phases = [ "buildPhase" "installPhase" ];
+        # buildPhase = "cargo build --release";
+        # installPhase = "cp $src/target/release/file_server $out/bin/fileserver";
+      };
+
+      packages.${system}.default = default;
+
+      RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
     };
-
-    packages.${system}.default = default;
-    
-    RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
-  };
 }
