@@ -10,6 +10,7 @@ use std::{
 };
 
 use flate2::Compression;
+use urlencoding;
 
 const VERSION: &str = "HTTP/1.1";
 const ENCODINGS: [&str; 1] = ["gzip"];
@@ -144,7 +145,7 @@ fn handle_connection(
             println!(
                 "{}: GET {}",
                 stream.peer_addr().unwrap(),
-                String::from_utf8_lossy(request.target)
+                String::from_utf8_lossy(&urlencoding::decode_binary(request.target))
             );
             check_target(request, single_file, compression)
         }
@@ -178,7 +179,6 @@ fn handle_connection(
     println!("response sent: {} {}", response.code, response.message);
     Ok(())
 }
-
 
 /// parses and returns an request
 fn parse_request(bytes: &[u8]) -> Result<Request, String> {
@@ -234,10 +234,10 @@ fn parse_request(bytes: &[u8]) -> Result<Request, String> {
     })
 }
 
-
 /// checks if the requested file exists, if so return an apropriate response
-/// 
+///
 /// if the file does not exists returns a 404 error
+/// url encoding standard just uses the ascii code in hex after a %
 fn check_target(request: Request, single_file: Option<PathBuf>, compression: bool) -> Response {
     if let Some(single_file) = single_file {
         let mut headers = HashMap::new();
@@ -266,7 +266,8 @@ fn check_target(request: Request, single_file: Option<PathBuf>, compression: boo
     }
 
     let working_dir = std::env::current_dir().unwrap();
-    let mut filename = String::from_utf8_lossy(request.target).to_string();
+    let mut filename =
+        String::from_utf8_lossy(&urlencoding::decode_binary(request.target)).into_owned();
     filename.remove(0);
     if filename.is_empty() {
         filename.push('.');
@@ -377,5 +378,5 @@ fn crash(error: Box<dyn Display>, message: &str, stream: TcpStream) -> ! {
 }
 
 fn link(path: &str, text: &str) -> String {
-    format!("<a href=\"{}\">{}</a><br>", path, text)
+    format!("<a href=\"{}\">{}</a><br>", urlencoding::encode(path), text)
 }
