@@ -237,7 +237,6 @@ fn parse_request(bytes: &[u8]) -> Result<Request, String> {
 /// checks if the requested file exists, if so return an apropriate response
 ///
 /// if the file does not exists returns a 404 error
-/// url encoding standard just uses the ascii code in hex after a %
 fn check_target(request: Request, single_file: Option<PathBuf>, compression: bool) -> Response {
     if let Some(single_file) = single_file {
         let mut headers = HashMap::new();
